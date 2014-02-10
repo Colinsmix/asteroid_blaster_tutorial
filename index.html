@@ -1,36 +1,320 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <title>Asteroid Blaster!</title>
     <link rel="stylesheet" type="text/css" href="style.css"/>
+
     <script src="Kinetic.js"></script>
+
+    <script type="text/javascript">
+
+
+      hit = 0;
+      enemiesRemaining=0;
+      worldEnded=false;
+      var thisPos = new Array();
+      var curPos = new Array();
+      topScore = false;
+
+
+      window.onload = function(){
+        checkVars();
+        var kin = new Kinetic_2d("theCanvas");
+        var context = kin.getContext();
+        var message = "";
+        var worldX = document.getElementById("theCanvas");
+        var worldXContext = worldX.getContext("2d");
+        var img = new Image();
+        intervalId1 =0;
+        intervalId2 =0;
+        img.src = "earth.jpg";
+        worldXContext.drawImage(img,0,0);
+            kin.getCanvas().mouseup = function(){
+              kin.drawStage();
+            };
+
+            kin.setDrawStage(function(){
+              var mousePos = kin.getMousePos();
+
+              if (mousePos !== null) {
+                curPos[0] = mousePos.x;
+                curPos[1] = mousePos.y;
+              }
+              else {
+                curPos[0] = 0;
+                curPos[1] = 0;
+              }
+
+
+
+            });
+        };
+
+
+      function checkVars(){
+
+        if(sessionStorage.hit==0||sessionStorage.hit==undefined){
+          sessionStorage.hit=0;
+        }
+
+        hit = sessionStorage.hit;
+        document.getElementById("hit").innerHTML = hit;
+
+        if(localStorage.tophit>=sessionStorage.hit&&localStorage.tophit!=0){
+          document.getElementById("tophit").innerHTML = localStorage.tophit;
+        }
+
+        else if(localStorage.tophit==undefined||localStorage.tophit==0){
+          localStorage.tophit=0;
+          document.getElementById("tophit").innerHTML = 0;
+        }
+
+        if(sessionStorage.enemies==undefined||sessionStorage.enemies==0){
+          sessionStorage.enemies = 5;
+        }
+
+        enemiesRemaining=sessionStorage.enemies;
+        document.getElementById("enemiesRemaining").innerHTML = enemiesRemaining;
+
+      }
+
+      function startFalling(){
+
+        intervalId1= setInterval(function(){
+
+          var asteroidx = new Asteroid();
+
+          do{
+            intervalId2 = setInterval(function(){
+            asteroidx.fallDown();
+        }
+        ,20)}while(this.alive==true);
+
+        }
+        ,500);
+
+        btnStarter = document.getElementById("btx");
+        btnStarter.setAttribute("value","RESTART");
+        btnStarter.setAttribute("onclick","restart()");
+
+      }
+
+
+      function restart(){
+        sessionStorage.hit = 0;
+        sessionStorage.enemies = 0;
+        location.reload(true);
+      }
+
+      //OBJECT IMPLEMENTATION
+
+      function Asteroid(){
+
+        this.world = document.getElementById("theCanvas");
+        this.worldContext = this.world.getContext("2d");
+        this.worldContext.strokeStyle = "#FF0000";
+        this.x = Math.floor(Math.random()*999);
+        this.y = 0;
+        this.alive = true;
+        this.update = false;
+        this.id = intervalId2;
+
+        if(this.x>500){
+          this.direction = "right";
+        }
+        else{
+          this.direction = "left";
+        }
+
+      }
+
+      Asteroid.prototype.trajectory = function(){
+
+      if(this.x>998){
+        this.direction ="right";
+      }
+      else if(this.x<2){
+        this.direction = "left";
+      }
+
+      if(this.direction=="right"){
+        this.y++;
+        this.x--;
+      }
+      else{
+        this.y++;
+        this.x++;
+      }
+
+      }
+
+
+      Asteroid.prototype.fallDown = function(){
+
+      if(worldEnded==false){
+        if(this.alive==true){
+          this.worldContext.beginPath();
+
+          if(((thisPos[0]-this.x)<10&&(thisPos[0]-this.x)>-10&&(thisPos[1]-this.y)<10&&(thisPos[1]-this.y)>-10)&&thisPos[0]!=0&&thisPos[1]!=0)
+          {
+            this.alive = false;
+            this.worldContext.strokeStyle = "#FFFF00";
+            this.worldContext.arc(this.x,this.y,10,0,Math.PI*2,true);
+            this.worldContext.stroke();
+            this.worldContext.strokeStyle = "#FF0000";
+            statUp ="</br> Asteroid #"+intervalId2+ " has been succesfully destroyed!";
+            setStatusUpdate(statUp);
+            //this.y = y;
+            //this.x = x;
+            hit++;
+            enemiesRemaining--;
+            document.getElementById("hit").innerHTML = hit;
+            document.getElementById("enemiesRemaining").innerHTML = enemiesRemaining;
+            checkForTopScore();
+          }
+
+          else
+          {
+            this.worldContext.moveTo(this.x,this.y);
+            this.trajectory();
+            this.worldContext.lineTo(this.x,this.y);
+            this.worldContext.stroke();
+            if(this.y>250){
+              if(this.update==false){
+
+              statUp ="</br> <i>Asteroid #"+intervalId2+ "</i> has entered the atmosphere!";
+              setStatusUpdate(statUp);
+              this.update=true;
+              }
+            }
+
+            if(this.y>500){
+            this.worldContext.fillStyle="#FF0000";
+            this.worldContext.arc(this.x,this.y,100,0,Math.PI*2,true);
+            this.worldContext.stroke();
+            this.worldContext.fill();
+            this.intervalId = intervalId2;
+            this.alive = false;
+            worldEnded = true;
+            }
+          }
+          this.worldContext.closePath();
+        }
+      }
+
+      else if(worldEnded==true){
+
+        var worldX = document.getElementById("theCanvas");
+        var worldXContext = worldX.getContext("2d");
+        var img = new Image();
+        img.src = "nuke.jpg";
+        worldXContext.drawImage(img,-300,-300);
+
+        if(topScore==true){
+          alert("NOOOOOOOOOOOOOOOOO!\nOh yeah, congrats you got the top score. NOOOOOOOOOOOOOOOOOOOOO!");
+          topScore =false;
+        }
+
+        window.clearInterval(this.intervalId);
+        window.clearInterval(intervalId1);
+        statUp ="</br> THE WORLD HAS BEEN DESTROYED!";
+        setStatusUpdate(statUp);
+        }
+      }
+
+
+      function checkForTopScore(){
+      if(localStorage.tophit<=hit){
+        localStorage.tophit = hit;
+        document.getElementById("tophit").innerHTML = hit;
+        topScore=true;
+      }
+      if(enemiesRemaining==0){
+        sessionStorage.enemies = sessionStorage.enemies  * 2;
+        sessionStorage.hit = hit;
+        alert("GOOD JOB! NEXT WAVE:"+ sessionStorage.enemies);
+        location.reload(true);
+      }
+      }
+
+      function hitIt(){
+        thisPos[0] = curPos[0];
+        thisPos[1] = curPos[1];
+        setTimeout("emptySights()",500);
+      }
+
+      function emptySights(){
+        thisPos[0] = 0;
+        thisPos[1] = 0;
+      }
+
+      function setStatusUpdate(msg){
+        document.getElementById("statusUpdates").innerHTML = msg;
+        z=0;
+        setInterval(function(){
+        z++;
+        if((z%2)==0){
+          sU = document.getElementById("statusUpdates");
+          sU.setAttribute("style","color:black;");
+        }
+        else{
+          sU = document.getElementById("statusUpdates");sU.setAttribute("style","color:white;");
+        }
+        },100);
+      }
+
+      function resetAll(){
+        sessionStorage.hit = 0;
+        sessionStorage.enemies = 0;
+        localStorage.tophit = 0;
+        location.reload(true);
+      }
+
+    </script>
   </head>
+
   <body>
-    <div id ="box">
-      <h1 id = "title">ASTEROID BLASTER</h1></br></br>
-      <table border="1" align="center">
-        <tr>
-          <td>HIT:<p id="hit" ></p></td>
-          <hgroup>
-            <td>TOP SCORE:<h1 id="tophit"></h1></td>
-            <td>ENEMIES REMAINING:<h2 id="enemiesRemaining" ></h2></td>
-          </hgroup>
-          <td><p id="statusUpdates">STATUS UPDATES</p></td>
-          <td><input type="button" value="MASTER RESET" onclick="resetAll()"/></td>
-          <td><input type="button" value="START FALLING!" onclick="startFalling()" id="btx"/></td>
-        </tr>
-      </table></br>
-      <canvas id="theCanvas" width="1000" height ="500"  style="border:1px solid black" onclick = "hitIt()"></canvas>
-    </div>
+
+  <div id ="box">
+
+
+    <h1 id = "title">ASTEROID BLASTER</h1></br></br>
+    <table border="1" align="center">
+
+      <tr>
+
+        <td>HIT:<p id="hit" ></p></td>
+
+        <hgroup>
+
+          <td>TOP SCORE:<h1 id="tophit"></h1></td>
+
+          <td>ENEMIES REMAINING:<h2 id="enemiesRemaining" ></h2></td>
+
+        </hgroup>
+
+        <td><p id="statusUpdates">STATUS UPDATES</p></td>
+
+        <td><input type="button" value="MASTER RESET" onclick="resetAll()"/></td>
+
+        <td><input type="button" value="START FALLING!" onclick="startFalling()" id="btx"/></td>
+
+      </tr>
+
+    </table></br>
+
+    <canvas id="theCanvas" width="1000" height ="500"  style="border:1px solid black" onclick = "hitIt()"></canvas></br>
+
     <details>
       <summary>COPYRIGHT 09 - 29 - 11</summary>
       <p>
       This has been another </p><div id="prodName">Nothing Else To Do</div> <p>production.
       Thanks for checking this out!
-      :)/>
+      :)
       </p>
     </details>
 
-  <script src="javascript.js"></script>
+    </div>
   </body>
+
 </html>
+
