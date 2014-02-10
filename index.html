@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Asteroid Blaster!</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <script src="Kinetic.js"></script>
+  </head>
+  <body>
+    <div id ="box">
+      <h1 id = "title">ASTEROID BLASTER</h1></br></br>
+      <table border="1" align="center">
+        <tr>
+          <td>HIT:<p id="hit" ></p></td>
+          <hgroup>
+            <td>TOP SCORE:<h1 id="tophit"></h1></td>
+            <td>ENEMIES REMAINING:<h2 id="enemiesRemaining" ></h2></td>
+          </hgroup>
+          <td><p id="statusUpdates">STATUS UPDATES</p></td>
+          <td><input type="button" value="MASTER RESET" onclick="resetAll()"/></td>
+          <td><input type="button" value="START FALLING!" onclick="startFalling()" id="btx"/></td>
+        </tr>
+      </table></br>
+      <canvas id="theCanvas" width="1000" height ="500"  style="border:1px solid black" onclick = "hitIt()"></canvas>
+    </div>
+    <details>
+      <summary>COPYRIGHT 09 - 29 - 11</summary>
+      <p>
+      This has been another </p><div id="prodName">Nothing Else To Do</div> <p>production.
+      Thanks for checking this out!
+      :)/>
+      </p>
+    </details>
+
+  <script src="javascript.js"></script>
+  </body>
+</html>
